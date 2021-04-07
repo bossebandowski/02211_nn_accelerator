@@ -7,24 +7,24 @@ class NeuronTest(dut: Neuron) extends PeekPokeTester(dut) {
     // 'step' to advance clk 
     // 'expect' to check output
 
-    poke(dut.io.in0, 1)
-    poke(dut.io.in1, 0)
-    poke(dut.io.in2, 0)
-    poke(dut.io.w0, 1)
-    poke(dut.io.w1, 0)
-    poke(dut.io.w2, 0)
-    poke(dut.io.b0, 1)
-    poke(dut.io.b1, 0)
-    poke(dut.io.b2, 0)
+    poke(dut.io.inVals(0), 1)
+    poke(dut.io.inVals(1), 0)
+    poke(dut.io.inVals(2), 0)
+    poke(dut.io.weights(0), 1)
+    poke(dut.io.weights(1), 0)
+    poke(dut.io.weights(2), 0)
+    poke(dut.io.biases(0), 1)
+    poke(dut.io.biases(1), 0)
+    poke(dut.io.biases(2), 0)
 
     step(1)
 
-    expect(dut.io.dout, 1)
+    expect(dut.io.dout(0), 1)
 
 }
 
 class NeuronSpec extends FlatSpec with Matchers {
     "Neuron" should "pass" in {
-        chisel3.iotesters.Driver(() => new Neuron) { c => new NeuronTest(c)} should be (true)
+        chisel3.iotesters.Driver(() => new Neuron(3, 16)) { c => new NeuronTest(c)} should be (true)
     }
 }
