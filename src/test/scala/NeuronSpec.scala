@@ -1,3 +1,4 @@
+import chisel3._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest._
 
@@ -7,15 +8,15 @@ class NeuronTest(dut: Neuron) extends PeekPokeTester(dut) {
     // 'step' to advance clk 
     // 'expect' to check output
 
-    poke(dut.io.in0, 1)
-    poke(dut.io.in1, 0)
-    poke(dut.io.in2, 0)
-    poke(dut.io.w0, 1)
-    poke(dut.io.w1, 0)
-    poke(dut.io.w2, 0)
-    poke(dut.io.b0, 1)
-    poke(dut.io.b1, 0)
-    poke(dut.io.b2, 0)
+    poke(dut.io.in0, 1.U)
+    poke(dut.io.in1, 0.U)
+    poke(dut.io.in2, 0.U)
+    poke(dut.io.w0, 1.U)
+    poke(dut.io.w1, 0.U)
+    poke(dut.io.w2, 0.U)
+    poke(dut.io.b0, 1.U)
+    poke(dut.io.b1, 0.U)
+    poke(dut.io.b2, 0.U)
 
     step(1)
 
