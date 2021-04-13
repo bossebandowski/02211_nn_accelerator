@@ -1,19 +1,20 @@
 import chisel3._
+import chisel3.experimental.FixedPoint
 
 
 // an example 3-input neuron
 class Neuron(edges_in: Int, width: Int) extends Module {
     // io stuff
     val io = IO(new Bundle {
-        val inVals = Input(Vec(edges_in, UInt(width.W)))
-        val weights = Input(Vec(edges_in, UInt(width.W)))
-        val biases = Input(Vec(edges_in, UInt(width.W)))
-        val dout = Output(UInt(16.W))
+        val inVals = Input(Vec(edges_in, FixedPoint((width.W),5.BP)))
+        val weights = Input(Vec(edges_in, FixedPoint((width.W),5.BP)))
+        val biases = Input(Vec(edges_in, FixedPoint((width.W),5.BP)))
+        val dout = Output(FixedPoint((width.W),5.BP))
     })
 
     // intermediate results (all incoming edges)
-    val tmp = Wire(Vec(edges_in, UInt(width.W)))
-    val mac = Wire(Vec(edges_in, UInt(width.W)))
+    val tmp = Wire(Vec(edges_in, FixedPoint((width.W),5.BP)))
+    val mac = Wire(Vec(edges_in, FixedPoint((width.W),5.BP)))
 
     for (i <- 0 until edges_in) {
         tmp(i) := io.inVals(i) * io.weights(i) + io.biases(i)
@@ -26,11 +27,11 @@ class Neuron(edges_in: Int, width: Int) extends Module {
     }
     
     // activation (ReLU: linear mapping in [0..1])
-    val mac_cap_top = Wire(UInt())
-    val mac_cap = Wire(UInt())
+    val mac_cap_top = Wire(FixedPoint((width.W),5.BP))
+    val mac_cap = Wire(FixedPoint((width.W),5.BP))
 
-    mac_cap_top := Mux(mac(edges_in - 1) > 1.U, 1.U, mac(edges_in - 1))
-    mac_cap := Mux(mac_cap_top < 0.U, 0.U, mac_cap_top)
+    mac_cap_top := Mux(mac(edges_in - 1) > 1.F(width.W,5.BP), 1.F(width.W,5.BP), mac(edges_in - 1))
+    mac_cap := Mux(mac_cap_top < 0.F(width.W,5.BP), 0.F(width.W,5.BP), mac_cap_top)
 
     // output assignment
     io.dout := mac_cap
