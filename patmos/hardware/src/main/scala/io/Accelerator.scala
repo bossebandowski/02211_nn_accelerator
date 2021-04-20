@@ -14,19 +14,53 @@ object Accelerator extends DeviceObject {
 }
 
 class Accelerator() extends CoreDevice() {
+  val readAddr = Reg(init = UInt(0, 18))
+  val writeAddr = Reg(init = UInt(0, 18))
+  val masterReg = Reg(next = io.ocp.M)
+  val slaveReg = Reg(next = io.ocp.S)
 
-  val countReg = Reg(init = UInt(0, 32))
-  countReg := countReg + UInt(1)
-  when (io.ocp.M.Cmd === OcpCmd.WR) {
-    countReg := io.ocp.M.Data 
+  // memory
+  val memory = Module(new Memory())
+
+  // address constants
+  val imgAddrZero = 0
+  val weightAddrZero = 784
+  val biasAddrZero = 80184
+  val lastAddr = 159584
+
+  // network constants
+
+  // states
+  val nonn :: loadnn :: idle :: infload :: infrun :: Nil = Enum(UInt(), 5)
+  val stateReg = Reg(init = nonn)
+
+  val outputReg = Reg(init = UInt(15, 4))
+
+  // state machine goes here
+  when (masterReg.Cmd === OcpCmd.WR) {
+    when (stateReg === nonn) {
+      when(masterReg.Data(0) === UInt(0)){
+        stateReg := loadnn
+        writeAddr := weightAddrZero
+    }
+    when (stateReg === loadnn) {
+      memory.io.wrEna := True
+      memory.io.wrAddr := writeAddr
+      memory.io.wrData := masterReg.Data
+      writeAddr := writeAddr + UInt(1)
+      when (writeAddr === lastAddr) {
+        stateReg := idle
+      }
+    }
+    countReg := masterReg.Data 
   }
   
   val respReg = Reg(init = OcpResp.NULL)
   respReg := OcpResp.NULL
-  when(io.ocp.M.Cmd === OcpCmd.RD || io.ocp.M.Cmd === OcpCmd.WR) {
+  when(masterReg.Cmd === OcpCmd.RD || masterReg.Cmd === OcpCmd.WR) {
     respReg := OcpResp.DVA
   }
   
-  io.ocp.S.Data := countReg  
-  io.ocp.S.Resp := respReg
+  slaveReg.Data := countReg  
+  slaveReg.Resp := respReg
 }
