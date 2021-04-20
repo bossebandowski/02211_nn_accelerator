@@ -27,13 +27,11 @@
   <IOs>
     <IO DevTypeRef="Timer" offset="2" intrs="0,1" allcores="true" />
     <IO DevTypeRef="Deadline" offset="3" allcores="true" />
-    <IO DevTypeRef="Counter" offset="11" />
   </IOs>
 
   <Devs>
     <Dev DevType="Timer" entity="Timer" iface="OcpCore" />
     <Dev DevType="Deadline" entity="Deadline" iface="OcpCore"/>
-    <Dev DevType="Counter" entity="Counter" iface="OcpCore"/>
   </Devs>
 </patmos>
 
