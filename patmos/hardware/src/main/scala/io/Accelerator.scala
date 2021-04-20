@@ -20,13 +20,13 @@ class Accelerator() extends CoreDevice() {
   val slaveReg = Reg(next = io.ocp.S)
 
   // memory
-  val memory = Module(new Memory())
+  // val memory = Module(new Memory())
 
   // address constants
-  val imgAddrZero = 0
-  val weightAddrZero = 784
-  val biasAddrZero = 80184
-  val lastAddr = 159584
+  val imgAddrZero = UInt(0)
+  val weightAddrZero = UInt(784)
+  val biasAddrZero = UInt(80184)
+  val lastAddr = UInt(159584)
 
   // network constants
 
@@ -42,17 +42,18 @@ class Accelerator() extends CoreDevice() {
       when(masterReg.Data(0) === UInt(0)){
         stateReg := loadnn
         writeAddr := weightAddrZero
+      }
     }
     when (stateReg === loadnn) {
-      memory.io.wrEna := True
-      memory.io.wrAddr := writeAddr
-      memory.io.wrData := masterReg.Data
+      // memory.io.wrEna := True
+      // memory.io.wrAddr := writeAddr
+      // memory.io.wrData := masterReg.Data
       writeAddr := writeAddr + UInt(1)
       when (writeAddr === lastAddr) {
         stateReg := idle
       }
     }
-    countReg := masterReg.Data 
+    outputReg := masterReg.Data 
   }
   
   val respReg = Reg(init = OcpResp.NULL)
@@ -61,6 +62,6 @@ class Accelerator() extends CoreDevice() {
     respReg := OcpResp.DVA
   }
   
-  slaveReg.Data := countReg  
+  slaveReg.Data := outputReg  
   slaveReg.Resp := respReg
 }
