@@ -3,28 +3,31 @@
 #include <unistd.h>
 #include "accelerator/neuralNetwork.h"
 #include "accelerator/counter.h"
-int main() 
-{ 
-    // Just tester code, nothing important
-    printf("ok");
+
+int main() {
     int val;
-    val = *IO_PTR_CNT;
-    printf("%d\n", val);
-    for(int i =0; i <10;i++)
-    {
-        val = *IO_PTR_CNT;
-        printf("%d\n", val);
+    // Testing state machine
+    // init: 15 in output_reg, nonn
+    val = *IO_PTR_ACC;
+    printf("expected: 15; got: %d\n", val);
+    // first write: transition to loadnn
+    *IO_PTR_ACC = 1;
+    val = *IO_PTR_ACC;
+    printf("expected: 1; got: %d\n", val);
+    *IO_PTR_ACC = 0;
+    val = *IO_PTR_ACC;
+    printf("got: %d\n", val);
+    *IO_PTR_ACC = 0;
+    val = *IO_PTR_ACC;
+    printf("got: %d\n", val);
+    *IO_PTR_ACC = 0;
+    val = *IO_PTR_ACC;
+    printf("got: %d\n", val);
+    // 200k writes to transition to idle state
+    for (int i = 0; i < 200000; i++) {
+        *IO_PTR_ACC = 0;
     }
-
-    val = *IO_PTR_CNT;
-    printf("%d\n", val);
-    for(int i =0; i <10;i++)
-    {
-        *IO_PTR_CNT = 15;
-        val = *IO_PTR_CNT;
-        printf("%d\n", val);
-    }
-
-    // Program will stuck here, because the device is not ready yet
-    getNeuralNetworkStatus();
+    val = *IO_PTR_ACC;
+    printf("got: %d\n", val);
+     
 }

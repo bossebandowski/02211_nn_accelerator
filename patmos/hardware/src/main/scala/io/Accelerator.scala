@@ -20,7 +20,6 @@ class Accelerator() extends CoreDevice() {
   val readAddrB = Reg(init = UInt(0, 18))
   val writeAddr = Reg(init = UInt(0, 18))
   val masterReg = Reg(next = io.ocp.M)
-  val slaveReg = Reg(next = io.ocp.S)
   val pReg = Reg(init = UInt(0, 8))
   val wReg = Reg(init = UInt(0, 8))
   val bReg = Reg(init = UInt(0, 8))
@@ -40,7 +39,7 @@ class Accelerator() extends CoreDevice() {
   val nonn :: loadnn :: idle :: infload :: infrun :: loadpx :: loadw :: loadb :: Nil = Enum(UInt(), 8)
   val stateReg = Reg(init = nonn)
 
-  val outputReg = Reg(init = UInt(15, 4))
+  val outputReg = Reg(init = UInt(15, 32))
 
   // state machine goes here
   when (masterReg.Cmd === OcpCmd.WR) {
@@ -51,6 +50,7 @@ class Accelerator() extends CoreDevice() {
         writeAddr := weightAddrZero
       }
     }
+
     when (stateReg === loadnn) {
       outputReg := UInt(2)
       memory.io.wrEna := true.B
@@ -62,17 +62,19 @@ class Accelerator() extends CoreDevice() {
         stateReg := idle
       }
     }
+
     when (stateReg === idle) {
       outputReg := UInt(3)
-      when(masterReg.Data(0) === UInt(0)) {
+      /*when(masterReg.Data(0) === UInt(0)) {
         stateReg := loadnn
         writeAddr := weightAddrZero
       }
       .otherwise {
         stateReg := infload
         writeAddr := imgAddrZero
-      }
+      }*/
     }
+
     when (stateReg === infload) {
       outputReg := UInt(4)
       memory.io.wrEna := true.B
@@ -87,6 +89,7 @@ class Accelerator() extends CoreDevice() {
         stateReg := infrun
       }
     }
+
     when (stateReg === infrun) {
       // Behaviour TBD
       outputReg := UInt(5)
@@ -95,10 +98,11 @@ class Accelerator() extends CoreDevice() {
   
   val respReg = Reg(init = OcpResp.NULL)
   respReg := OcpResp.NULL
+
   when(masterReg.Cmd === OcpCmd.RD || masterReg.Cmd === OcpCmd.WR) {
     respReg := OcpResp.DVA
   }
   
-  slaveReg.Data := outputReg  
-  slaveReg.Resp := respReg
+  io.ocp.S.Data := outputReg
+  io.ocp.S.Resp := respReg
 }
