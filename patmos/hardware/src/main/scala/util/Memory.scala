@@ -1,3 +1,5 @@
+package util
+
 import chisel3._
 
 class Memory() extends Module {
