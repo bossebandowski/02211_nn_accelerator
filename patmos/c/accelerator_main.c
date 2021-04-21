@@ -1,25 +1,30 @@
 #include <machine/patmos.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "accelerator/neuralNetwork.h"
+#include "accelerator/counter.h"
 int main() 
 { 
-    volatile _IODEV int *io_ptr_acc = (volatile _IODEV int *) 0xf00c0000;
-    volatile _IODEV int *io_ptr_cnt = (volatile _IODEV int *) 0xf00b0000;
+    // Just tester code, nothing important
+    printf("ok");
     int val;
-    
-    val = *io_ptr_cnt;
+    val = *IO_PTR_CNT;
     printf("%d\n", val);
     for(int i =0; i <10;i++)
     {
-        val = *io_ptr_cnt;
+        val = *IO_PTR_CNT;
         printf("%d\n", val);
     }
-    
-    val = *io_ptr_acc;
+
+    val = *IO_PTR_CNT;
     printf("%d\n", val);
     for(int i =0; i <10;i++)
     {
-        val = *io_ptr_acc;
+        *IO_PTR_CNT = 15;
+        val = *IO_PTR_CNT;
         printf("%d\n", val);
     }
+
+    // Program will stuck here, because the device is not ready yet
+    getNeuralNetworkStatus();
 }

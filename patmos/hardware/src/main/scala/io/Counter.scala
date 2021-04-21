@@ -56,9 +56,10 @@ object Counter extends DeviceObject {
 class Counter() extends CoreDevice() {
 
   val countReg = Reg(init = UInt(1600, 32))
-  //countReg := countReg + UInt(1)
+  countReg := countReg + UInt(1)
   when (io.ocp.M.Cmd === OcpCmd.WR) {
-    countReg := io.ocp.M.Data 
+    countReg := io.ocp.M.Data
+     
   }
   
   val respReg = Reg(init = OcpResp.NULL)
