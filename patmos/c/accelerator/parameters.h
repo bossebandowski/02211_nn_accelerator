@@ -1,10 +1,12 @@
+#include <stdint.h>
 //File to define the constants of the Neural Network
 
 // TODO: Add the constants here:
-//const int weights[79400] = {5, 6, 7, 8};
-//const int biases[79400] = {5, 6, 7, 8};
-//const int picture[784] = {5, 6, 7, 8};
+//const uint8_t weights[79400] = {5, 6, 7, 8};
+//const uint8_t biases[79400] = {5, 6, 7, 8};
+//const uint8_t picture[784] = {5, 6, 7, 8};
 //TEMPORARY variable -> just to make the program compilable
-int weights[79400];
-int biases[79400];
-int picture[784];
+
+uint8_t weights[79400];
+uint8_t biases[79400];
+uint8_t picture[784];

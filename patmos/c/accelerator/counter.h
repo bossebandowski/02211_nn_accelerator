@@ -18,9 +18,9 @@ int cntRead()
     return (*IO_PTR_CNT);
 }
 
-int cntReadMicros()
+double cntReadMicros()
 {
     int cycles = cntRead();
-    int frequency = get_cpu_freq();
-    return (cycles * frequency);
+    double period = 1000000.0 / (double) get_cpu_freq(); //[usec]
+    return (cycles * period);
 }
