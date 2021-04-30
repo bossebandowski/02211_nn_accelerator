@@ -51,51 +51,59 @@ class Accelerator() extends CoreDevice() {
   // state machine goes here
   when (masterReg.Cmd === OcpCmd.WR) {
     io.ocp.S.Resp := OcpResp.DVA
-    when (stateReg === nonn) {
-      when(masterReg.Data === UInt(0)) {
-        stateReg := loadnn
-        writeAddr := weightAddrZero
-      }
-    }
+    switch(masterReg.Addr(4,0)) {
+      is(0x0.U) { 
+        when (stateReg === nonn) {
+          when(masterReg.Data === UInt(0)) {
+            stateReg := loadnn
+            writeAddr := weightAddrZero
+          }
+        }
 
-    when (stateReg === loadnn) {
-      memory.io.wrEna := true.B
-      memory.io.wrAddr := writeAddr
-      memory.io.wrData := (masterReg.Data).asSInt
-      writeAddr := writeAddr + UInt(1)
-      when (writeAddr === lastAddr) {
-        memory.io.wrEna := false.B
-        stateReg := idle
-      }
-    }
+        when (stateReg === loadnn) {
+          memory.io.wrEna := true.B
+          memory.io.wrAddr := writeAddr
+          memory.io.wrData := (masterReg.Data).asSInt
+          when (writeAddr === lastAddr) {
+            // memory.io.wrEna := false.B
+            stateReg := idle
+          }
+          writeAddr := writeAddr + UInt(1)
+        }
 
-    when (stateReg === idle) {
-      /*when(masterReg.Data(0) === UInt(0)) {
-        stateReg := loadnn
-        writeAddr := weightAddrZero
-      }
-      .otherwise {
-        stateReg := infload
-        writeAddr := imgAddrZero
-      }*/
-    }
+        when (stateReg === idle) {
+          /*when(masterReg.Data(0) === UInt(0)) {
+            stateReg := loadnn
+            writeAddr := weightAddrZero
+          }
+          .otherwise {
+            stateReg := infload
+            writeAddr := imgAddrZero
+          }*/
+        }
 
-    when (stateReg === infload) {
-      memory.io.wrEna := true.B
-      memory.io.wrAddr := writeAddr
-      memory.io.wrData := (masterReg.Data).asSInt
-      writeAddr := writeAddr + UInt(1)
-      when (writeAddr === weightAddrZero) {
-        memory.io.wrEna := false.B
-        readAddrP := imgAddrZero
-        readAddrW := weightAddrZero
-        readAddrB := biasAddrZero
-        stateReg := infrun
-      }
-    }
+        when (stateReg === infload) {
+          memory.io.wrEna := true.B
+          memory.io.wrAddr := writeAddr
+          memory.io.wrData := (masterReg.Data).asSInt
+          writeAddr := writeAddr + UInt(1)
+          when (writeAddr === weightAddrZero) {
+            memory.io.wrEna := false.B
+            readAddrP := imgAddrZero
+            readAddrW := weightAddrZero
+            readAddrB := biasAddrZero
+            stateReg := infrun
+          }
+        }
 
-    when (stateReg === infrun) {
-      // Behaviour TBD
+        when (stateReg === infrun) {
+          // Behaviour TBD
+        }
+      }
+      // when setting memory address. only for dev and debugging
+      is(0x10.U) {
+        memTestAdr := masterReg.Data
+      }
     }
   }
 
@@ -106,11 +114,10 @@ class Accelerator() extends CoreDevice() {
       is(0x4.U) { 
         io.ocp.S.Data := stateReg
       }
-      //Read memory
+      //Read value from memory
       is(0xC.U) { 
         memory.io.rdAddr := memTestAdr
         io.ocp.S.Data := (memory.io.rdData).asUInt
-        memTestAdr := memTestAdr + UInt(1)
       }
       //Read result
     }

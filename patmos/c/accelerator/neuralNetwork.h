@@ -9,9 +9,8 @@ volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 
 #define ADR_ACCELERATOR_FILL                        *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x0))
 #define ADR_ACCELERATOR_STATUS                      *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x4))
-#define ADR_ACCELERATOR_FILL_32                     *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x8))
-#define ADR_ACCELERATOR_MEMORY_TEST_READ_8          *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0xC))
-#define ADR_ACCELERATOR_MEMORY_TEST_READ_32         *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x10))
+#define ADR_ACCELERATOR_MEMORY_TEST_READ            *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0xC))
+#define ADR_ACCELERATOR_SET_MEM_ADDR                *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x10))
 
 
 void fillNeuralNetwork()
@@ -23,7 +22,7 @@ void fillNeuralNetwork()
     printf("transitioned to state: %d \n", ADR_ACCELERATOR_STATUS);
 
     printf("Parameter transfer to accelerator has started\n");
-    printf("Transfering image\n");
+    //printf("Transfering image\n");
     /*for(int i = 0; i < 784; i++)
     {
         ADR_ACCELERATOR_FILL = picture[i];

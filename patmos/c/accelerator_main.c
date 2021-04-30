@@ -4,48 +4,7 @@
 #include "accelerator/neuralNetwork.h"
 #include "accelerator/counter.h"
 
-void memoryReadAndWrite8BitTest()
-{
-    for(int i = -150; i < 100; i++)
-    {
-        ADR_ACCELERATOR_FILL = i;
-    }
-    printf("220 value have written to memory\n");
-    int errors = 0;
-
-    for(int i = -150; i < 100; i++)
-    {
-        int readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
-        printf("Read: %d\n",readed);
-        if(readed != i)
-        {
-            printf("Expected: %d, Read: %d\n",i, readed);
-            errors ++;
-        }
-    }
-    printf("8 bit tests finished. %d erros\n", errors);
-
-    /*printf("Stating 32 bit tests...\n");
-    for(int32_t i = -110; i < 110; i ++)
-    {
-        ADR_ACCELERATOR_FILL_32 = i;
-    }
-    printf("20000 value have written to memory\n");
-    errors = 0;
-    for(int32_t i = 0; i < 110; i ++)
-    {
-        int32_t readed = ADR_ACCELERATOR_MEMORY_TEST_READ_32;
-        if(readed != i)
-        {
-            printf("Expected: %d, Readed: %d\n",i, readed);
-            errors ++;
-        }
-    }*/
-}
-
-int main() 
-{
-    printf("Program started\n");
+void loadNetworkCheck() {
     // transition to network load status
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
 
@@ -54,28 +13,52 @@ int main()
     fillNeuralNetwork();
 
     printf("state after network load: %d \n", ADR_ACCELERATOR_STATUS);
+    
+    int rsp = readFromMem(784);
+    printf("Expected: %d, Read: %d \n",weights_1[0], rsp);
+    rsp = readFromMem(10000);
+    printf("Expected: %d, Read: %d \n",weights_1[9216], rsp);
+    rsp = readFromMem(79183);
+    printf("Expected: %d, Read: %d \n",weights_1[78399], rsp);
+    rsp = readFromMem(79184);
+    printf("Expected: %d, Read: %d \n",weights_2[0], rsp);
+    rsp = readFromMem(79185);
+    printf("Expected: %d, Read: %d \n",weights_2[1], rsp);
+    rsp = readFromMem(80182);
+    printf("Expected: %d, Read: %d \n",weights_2[998], rsp);
+    rsp = readFromMem(80183);
+    printf("Expected: %d, Read: %d \n",weights_2[999], rsp);
+    rsp = readFromMem(80184);
+    printf("Expected: %d, Read: %d \n",biases_1[0], rsp);
+    rsp = readFromMem(80292);
+    printf("Expected: %d, Read: %d \n",biases_2[8], rsp);
+    rsp = readFromMem(80293);
+    printf("Expected: %d, Read: %d \n",biases_2[9], rsp);
 
-    for(int i = 0; i < 80293; i++)
-    {
-        int readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
-        if(i < 78400)
-        {
-            if(readed != weights_1[i])
-            {
-                printf("Expected: %d, Read: %d \n",weights_1[i], readed);   
-            }
-        }
-    }
-    // Transfer data from parameters.h
-    //fillNeuralNetwork();
+}
 
+int readFromMem(int addr) {
+    printf("checking value at address %d \n", addr);
+    ADR_ACCELERATOR_SET_MEM_ADDR = addr;
+    int val = ADR_ACCELERATOR_MEMORY_TEST_READ;
+    val = ADR_ACCELERATOR_MEMORY_TEST_READ;
+    return val;
+}
+
+int main() 
+{
+    printf("Program started\n");
+    
     printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
 
-    printf("Waiting for result\n");
+    loadNetworkCheck();
+
+    printf("done");
+    /*printf("Waiting for result\n");
     while(getNeuralNetworkStatus != (ACCELERATOR_STATE) READY)
     {
         sleep(100);
-    }
+    }*/
 }
 
 void stateTransitionTest()

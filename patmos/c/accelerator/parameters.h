@@ -78404,7 +78404,7 @@ const int weights_1[78400] = {
 	-10
 };
 
-const int8_t weights_2[1000] = {
+const int weights_2[1000] = {
 	-4,
 	-16,
 	22,
@@ -79407,7 +79407,7 @@ const int8_t weights_2[1000] = {
 	-31
 };
 
-const int32_t biases_1[100] = {
+const int biases_1[100] = {
 	-4094,
 	2053,
 	-1515,
@@ -79510,7 +79510,7 @@ const int32_t biases_1[100] = {
 	2997
 };
 
-const int32_t biases_2[10] = {
+const int biases_2[10] = {
 	-285,
 	27,
 	-41,
