@@ -5,10 +5,13 @@ typedef enum ACCELERATOR_STATE {IDLE, LOAD_NN, ERROR, READY}ACCELERATOR_STATE; /
 // IO device addresses
 volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 
-#define ADR_ACCELERATOR_BASE            0xf00c0000
+#define ADR_ACCELERATOR_BASE                        0xf00c0000
 
-#define ADR_ACCELERATOR_FILL            *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x0))
-#define ADR_ACCELERATOR_STATUS          *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x4))
+#define ADR_ACCELERATOR_FILL                        *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x0))
+#define ADR_ACCELERATOR_STATUS                      *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x4))
+#define ADR_ACCELERATOR_FILL_32                     *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x8))
+#define ADR_ACCELERATOR_MEMORY_TEST_READ_8          *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0xC))
+#define ADR_ACCELERATOR_MEMORY_TEST_READ_32         *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x10))
 
 
 void fillNeuralNetwork()
@@ -27,7 +30,7 @@ void fillNeuralNetwork()
     printf("Transfering weights\n");
     for(int i = 0; i < 79400; i++)
     {
-        ADR_ACCELERATOR_FILL = weights[i];
+        ADR_ACCELERATOR_FILL = weights_1[i];
         /*if((i+1) % 10000 ==0)
         {
             printf("%d/79400 weight transferred\n",i + 1);
@@ -37,7 +40,7 @@ void fillNeuralNetwork()
     printf("Transfering biases\n");
     for(int i = 0; i < 79400; i++)
     {
-        ADR_ACCELERATOR_FILL = biases[i];
+        ADR_ACCELERATOR_FILL = biases_1[i];
         /*if((i+1) % 10000 ==0)
         {
             printf("%d/79400 bias transferred\n",i + 1);
