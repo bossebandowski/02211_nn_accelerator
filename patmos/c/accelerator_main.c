@@ -35,7 +35,40 @@ void loadNetworkCheck() {
     rsp = readFromMem(80293);
     printf("Expected: %d, Read: %d \n",biases_2[9], rsp);
 
+    
+    printf("==================\n");
+    printf("network check done\n");
+    printf("==================\n");
+
 }
+
+void loadInfCheck() {
+    // check initial state (should be idle after network load, otherwise nonn)
+    printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
+    // transition to infload
+    ADR_ACCELERATOR_INPUT = 1;
+    // check state (should be infload)
+    printf("inf load state: %d \n", ADR_ACCELERATOR_STATUS);
+    printf("loading img...\n");
+    for(int i = 0; i < 784; i++) {
+        ADR_ACCELERATOR_INPUT = picture[i];
+    }
+
+    printf("done\n");
+
+    for (int i = 0; i < 30; i++) {
+        printf("Expected: %d, Read: %d \n", picture[i*20], readFromMem(i*20));
+    }
+
+    printf("Expected: %d, Read: %d \n", picture[783], readFromMem(783));
+
+
+    printf("==================\n");
+    printf("img check done\n");
+    printf("==================\n");
+    printf("state after inf load: %d \n", ADR_ACCELERATOR_STATUS);
+}
+
 
 int readFromMem(int addr) {
     printf("checking value at address %d \n", addr);
@@ -49,44 +82,10 @@ int main()
 {
     printf("Program started\n");
     
-    printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
 
     loadNetworkCheck();
+    loadInfCheck();
 
-    printf("done");
-    /*printf("Waiting for result\n");
-    while(getNeuralNetworkStatus != (ACCELERATOR_STATE) READY)
-    {
-        sleep(100);
-    }*/
-}
+    printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
 
-void stateTransitionTest()
-{
-    int val;
-    cntReset();
-    val = *IO_PTR_ACC;
-    printf("Counter test >>> Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
-    printf("expected: 15; got: %d\n", val);
-    // first write: transition to loadnn
-    *IO_PTR_ACC = 1;
-    val = *IO_PTR_ACC;
-    printf("expected: 1; got: %d\n", val);
-    *IO_PTR_ACC = 0;
-    val = *IO_PTR_ACC;
-    printf("got: %d\n", val);
-    *IO_PTR_ACC = 0;
-    val = *IO_PTR_ACC;
-    printf("got: %d\n", val);
-    *IO_PTR_ACC = 0;
-    val = *IO_PTR_ACC;
-    printf("got: %d\n", val);
-    // 200k writes to transition to idle state
-    cntReset();
-    for (int i = 0; i < 200000; i++) {
-        *IO_PTR_ACC = 0;
-    }
-    printf("Parameter transfer took %d clock cycles\n", cntRead());
-    val = *IO_PTR_ACC;
-    printf("got: %d\n", val);   
 }
