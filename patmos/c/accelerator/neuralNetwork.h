@@ -18,17 +18,13 @@ void fillNeuralNetwork()
 {
     printf("Parameter transfer to accelerator has started\n");
     printf("Transfering image\n");
-    for(int i = 0; i < 784; i++)
+    /*for(int i = 0; i < 784; i++)
     {
         ADR_ACCELERATOR_FILL = picture[i];
-        /*if((i+1) % 100 ==0)
-        {
-            printf("%d/784 pixel transferred\n",i + 1);
-        }*/
-    }
-    printf("Image transferred successfully\n");
+    }*/
+    //printf("Image transferred successfully\n");
     printf("Transfering weights\n");
-    for(int i = 0; i < 79400; i++)
+    for(int i = 0; i < 78400; i++)
     {
         ADR_ACCELERATOR_FILL = weights_1[i];
         /*if((i+1) % 10000 ==0)
@@ -36,15 +32,27 @@ void fillNeuralNetwork()
             printf("%d/79400 weight transferred\n",i + 1);
         }*/
     }
+    for(int i = 0; i < 1000; i++)
+    {
+        ADR_ACCELERATOR_FILL = weights_2[i];
+        /*if((i+1) % 10000 ==0)
+        {
+            printf("%d/79400 weight transferred\n",i + 1);
+        }*/
+    }
     printf("Weights transferred successfully\n");
     printf("Transfering biases\n");
-    for(int i = 0; i < 79400; i++)
+    for(int i = 0; i < 100; i++)
     {
         ADR_ACCELERATOR_FILL = biases_1[i];
         /*if((i+1) % 10000 ==0)
         {
             printf("%d/79400 bias transferred\n",i + 1);
         }*/
+    }
+    for(int i = 0; i < 10; i++)
+    {
+        ADR_ACCELERATOR_FILL = biases_2[i];
     }
     printf("Biases transferred successfully\n");
 }

@@ -6,15 +6,17 @@
 
 void memoryReadAndWrite8BitTest()
 {
-    for(int8_t i = -110; i < 110; i++)
+    for(int i = -150; i < 100; i++)
     {
         ADR_ACCELERATOR_FILL = i;
     }
     printf("220 value have written to memory\n");
     int errors = 0;
-    for(uint32_t i = -110; i < 110; i++)
+
+    for(int i = -150; i < 100; i++)
     {
-        int8_t readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
+        int readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
+        printf("Readed: %d\n",readed);
         if(readed != i)
         {
             printf("Expected: %d, Readed: %d\n",i, readed);
@@ -23,8 +25,8 @@ void memoryReadAndWrite8BitTest()
     }
     printf("8 bit tests finished. %d erros\n", errors);
 
-    printf("Stating 32 bit tests...\n");
-    for(int32_t i = 0; i < 110; i ++)
+    /*printf("Stating 32 bit tests...\n");
+    for(int32_t i = -110; i < 110; i ++)
     {
         ADR_ACCELERATOR_FILL_32 = i;
     }
@@ -38,14 +40,26 @@ void memoryReadAndWrite8BitTest()
             printf("Expected: %d, Readed: %d\n",i, readed);
             errors ++;
         }
-    }
+    }*/
 }
 
 int main() 
 {
     printf("Program started\n");
-    cntReset();
-    memoryReadAndWrite8BitTest();
+    //cntReset();
+    //memoryReadAndWrite8BitTest();
+    fillNeuralNetwork();
+    for(int i = 0; i < 80293; i++)
+    {
+        int readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
+        if(i < 78400)
+        {
+            if(readed != weights_1[i])
+            {
+                printf("Expected: %d, Readed: %d i:%d\n",weights_1[i], readed, i);   
+            }
+        }
+    }
     // Transfer data from parameters.h
     //fillNeuralNetwork();
 

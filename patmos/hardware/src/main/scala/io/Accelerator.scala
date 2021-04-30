@@ -19,25 +19,24 @@ class Accelerator() extends CoreDevice() {
   val readAddrW = Reg(init = UInt(0, 18))
   val readAddrB = Reg(init = UInt(0, 18))
   val writeAddr = Reg(init = UInt(0, 18))
-  val writeAddr32 = Reg(init = UInt(0, 18))
+  //val writeAddr32 = Reg(init = UInt(0, 18))
   val masterReg = Reg(next = io.ocp.M)
   val pReg = Reg(init = UInt(0, 8))
   val wReg = Reg(init = UInt(0, 8))
   val bReg = Reg(init = UInt(0, 8))
 
   // memory
-  val memory = Module(new MemorySInt(18, 8))
-  val memory32 = Module(new MemorySInt(18, 32))
+  val memory = Module(new MemorySInt(18, 32))
+
 
   // address constants
   val imgAddrZero = UInt(0)
   val weightAddrZero = UInt(784)
   val biasAddrZero = UInt(80184)
-  val lastAddr = UInt(159584)
+  val lastAddr = UInt(biasAddrZero + 109)
 
   //Memort test
-  val memTestAdr = Reg(init = UInt(784,18))
-  val memTestAdr32 = Reg(init = UInt(0,18))
+  val memTestAdr = Reg(init = UInt(783,18))
 
   // network constants
 
@@ -49,8 +48,6 @@ class Accelerator() extends CoreDevice() {
 
   // state machine goes here
   when (masterReg.Cmd === OcpCmd.WR) {
-    switch(masterReg.Addr(4,0)) {
-      is(0x0.U) { 
       when (stateReg === nonn) {
         outputReg := UInt(1)
         when(masterReg.Data(0) === UInt(0)) {
@@ -102,16 +99,6 @@ class Accelerator() extends CoreDevice() {
         // Behaviour TBD
         outputReg := UInt(5)
       }
-    }
-      //Write to 32 bit memory
-    is(0x8.U){
-        memory32.io.wrEna := true.B
-        memory32.io.wrAddr := writeAddr32
-        memory32.io.wrData := (masterReg.Data).asSInt
-        writeAddr32 := writeAddr32 + UInt(1)
-      }
-
-    }
   }
   
   val respReg = Reg(init = OcpResp.NULL)
@@ -131,9 +118,9 @@ class Accelerator() extends CoreDevice() {
       }
       //Read 32bit memory
       is(0x10.U) { 
-        memory.io.rdAddr := memTestAdr32
-        outputReg := (memory32.io.rdData).asUInt
-        memTestAdr32 := memTestAdr32 + UInt(1)
+        //memory.io.rdAddr := memTestAdr32
+        //outputReg := (memory32.io.rdData).asUInt
+        //memTestAdr32 := memTestAdr32 + UInt(1)
       }
     }
   }

@@ -1,7 +1,7 @@
 #include <stdint.h>
 //File to define the constants of the Neural Network
 
-const int8_t weights_1[78400] = {
+const int weights_1[78400] = {
 	-5,
 	-7,
 	-11,
