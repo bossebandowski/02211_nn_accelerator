@@ -48,65 +48,61 @@ class Accelerator() extends CoreDevice() {
   val nonn :: loadnn :: idle :: infload :: infrun :: loadpx :: loadw :: loadb :: Nil = Enum(UInt(), 8)
   val stateReg = Reg(init = nonn)
 
-  // state machine goes here
-  when (masterReg.Cmd === OcpCmd.WR) {
+  // set memory address. Only for debugging
+  when (masterReg.Cmd === OcpCmd.WR && masterReg.Addr(4,0) === 0x10.U) {
     io.ocp.S.Resp := OcpResp.DVA
-    switch(masterReg.Addr(4,0)) {
-      is(0x0.U) { 
-        when (stateReg === nonn) {
-          when(masterReg.Data === UInt(0)) {
-            stateReg := loadnn
-            writeAddr := weightAddrZero
-          }
-        }
-
-        when (stateReg === loadnn) {
-          memory.io.wrEna := true.B
-          memory.io.wrAddr := writeAddr
-          memory.io.wrData := (masterReg.Data).asSInt
-          when (writeAddr === lastAddr) {
-            // memory.io.wrEna := false.B
-            stateReg := idle
-          }
-          writeAddr := writeAddr + UInt(1)
-        }
-
-        when (stateReg === idle) {
-          /*when(masterReg.Data(0) === UInt(0)) {
-            stateReg := loadnn
-            writeAddr := weightAddrZero
-          }
-          .otherwise {
-            stateReg := infload
-            writeAddr := imgAddrZero
-          }*/
-        }
-
-        when (stateReg === infload) {
-          memory.io.wrEna := true.B
-          memory.io.wrAddr := writeAddr
-          memory.io.wrData := (masterReg.Data).asSInt
-          writeAddr := writeAddr + UInt(1)
-          when (writeAddr === weightAddrZero) {
-            memory.io.wrEna := false.B
-            readAddrP := imgAddrZero
-            readAddrW := weightAddrZero
-            readAddrB := biasAddrZero
-            stateReg := infrun
-          }
-        }
-
-        when (stateReg === infrun) {
-          // Behaviour TBD
-        }
+    memTestAdr := masterReg.Data
+  }
+  .otherwise {
+    // state machine goes here
+    when (stateReg === nonn) {
+      when (masterReg.Cmd === OcpCmd.WR && masterReg.Data === UInt(0)) {
+        io.ocp.S.Resp := OcpResp.DVA
+        stateReg := loadnn
+        writeAddr := weightAddrZero
       }
-      // when setting memory address. only for dev and debugging
-      is(0x10.U) {
-        memTestAdr := masterReg.Data
+    }
+    when (stateReg === loadnn && masterReg.Cmd === OcpCmd.WR) {
+      io.ocp.S.Resp := OcpResp.DVA
+      memory.io.wrEna := true.B
+      memory.io.wrAddr := writeAddr
+      memory.io.wrData := (masterReg.Data).asSInt
+      when (writeAddr === lastAddr) {
+        stateReg := idle
       }
+      writeAddr := writeAddr + UInt(1)
+    }
+    when (stateReg === idle && masterReg.Cmd === OcpCmd.WR) {
+      io.ocp.S.Resp := OcpResp.DVA
+      /*when(masterReg.Data(0) === UInt(0)) {
+        stateReg := loadnn
+        writeAddr := weightAddrZero
+      }
+      .otherwise {
+        stateReg := infload
+        writeAddr := imgAddrZero
+      }*/
+    }
+    when (stateReg === infload && masterReg.Cmd === OcpCmd.WR) {
+      io.ocp.S.Resp := OcpResp.DVA
+      memory.io.wrEna := true.B
+      memory.io.wrAddr := writeAddr
+      memory.io.wrData := (masterReg.Data).asSInt
+      writeAddr := writeAddr + UInt(1)
+      when (writeAddr === weightAddrZero) {
+        memory.io.wrEna := false.B
+        readAddrP := imgAddrZero
+        readAddrW := weightAddrZero
+        readAddrB := biasAddrZero
+        stateReg := infrun
+      }
+    }
+    when (stateReg === infrun) {
+      // Behaviour TBD
     }
   }
 
+  // handle reads. Only for returning results and debugging
   when(masterReg.Cmd === OcpCmd.RD){
     io.ocp.S.Resp := OcpResp.DVA
     //Read status
