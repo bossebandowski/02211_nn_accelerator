@@ -10,6 +10,7 @@ int main()
     for(int i =0; i <10;i++)
     {
         val = *io_ptr;
-        printf("%d\n", val);
     }
+    printf("%d\n", val);
+
 }

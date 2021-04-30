@@ -16,10 +16,10 @@ void memoryReadAndWrite8BitTest()
     for(int i = -150; i < 100; i++)
     {
         int readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
-        printf("Readed: %d\n",readed);
+        printf("Read: %d\n",readed);
         if(readed != i)
         {
-            printf("Expected: %d, Readed: %d\n",i, readed);
+            printf("Expected: %d, Read: %d\n",i, readed);
             errors ++;
         }
     }
@@ -46,9 +46,15 @@ void memoryReadAndWrite8BitTest()
 int main() 
 {
     printf("Program started\n");
+    // transition to network load status
+    printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
+
     //cntReset();
     //memoryReadAndWrite8BitTest();
     fillNeuralNetwork();
+
+    printf("state after network load: %d \n", ADR_ACCELERATOR_STATUS);
+
     for(int i = 0; i < 80293; i++)
     {
         int readed = ADR_ACCELERATOR_MEMORY_TEST_READ_8;
@@ -56,7 +62,7 @@ int main()
         {
             if(readed != weights_1[i])
             {
-                printf("Expected: %d, Readed: %d i:%d\n",weights_1[i], readed, i);   
+                printf("Expected: %d, Read: %d \n",weights_1[i], readed);   
             }
         }
     }

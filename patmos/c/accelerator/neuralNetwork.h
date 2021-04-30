@@ -16,6 +16,12 @@ volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 
 void fillNeuralNetwork()
 {
+    // transition to network load state
+    ADR_ACCELERATOR_FILL = 0;
+
+    
+    printf("transitioned to state: %d \n", ADR_ACCELERATOR_STATUS);
+
     printf("Parameter transfer to accelerator has started\n");
     printf("Transfering image\n");
     /*for(int i = 0; i < 784; i++)

@@ -33,7 +33,11 @@ class Accelerator() extends CoreDevice() {
   val imgAddrZero = UInt(0)
   val weightAddrZero = UInt(784)
   val biasAddrZero = UInt(80184)
-  val lastAddr = UInt(biasAddrZero + 109)
+  val lastAddr = UInt(80293)
+
+  // Default OCP response
+  io.ocp.S.Resp := OcpResp.NULL
+  io.ocp.S.Data := UInt(15, width = 32)
 
   //Memort test
   val memTestAdr = Reg(init = UInt(783,18))
@@ -44,91 +48,71 @@ class Accelerator() extends CoreDevice() {
   val nonn :: loadnn :: idle :: infload :: infrun :: loadpx :: loadw :: loadb :: Nil = Enum(UInt(), 8)
   val stateReg = Reg(init = nonn)
 
-  val outputReg = Reg(init = UInt(15, 32))
-
   // state machine goes here
   when (masterReg.Cmd === OcpCmd.WR) {
-      when (stateReg === nonn) {
-        outputReg := UInt(1)
-        when(masterReg.Data(0) === UInt(0)) {
-          stateReg := loadnn
-          writeAddr := weightAddrZero
-        }
+    io.ocp.S.Resp := OcpResp.DVA
+    when (stateReg === nonn) {
+      when(masterReg.Data === UInt(0)) {
+        stateReg := loadnn
+        writeAddr := weightAddrZero
       }
+    }
 
-      when (stateReg === loadnn) {
-        outputReg := UInt(2)
-        memory.io.wrEna := true.B
-        memory.io.wrAddr := writeAddr
-        memory.io.wrData := (masterReg.Data).asSInt
-        writeAddr := writeAddr + UInt(1)
-        when (writeAddr === lastAddr) {
-          memory.io.wrEna := false.B
-          stateReg := idle
-        }
+    when (stateReg === loadnn) {
+      memory.io.wrEna := true.B
+      memory.io.wrAddr := writeAddr
+      memory.io.wrData := (masterReg.Data).asSInt
+      writeAddr := writeAddr + UInt(1)
+      when (writeAddr === lastAddr) {
+        memory.io.wrEna := false.B
+        stateReg := idle
       }
+    }
 
-      when (stateReg === idle) {
-        outputReg := UInt(3)
-        /*when(masterReg.Data(0) === UInt(0)) {
-          stateReg := loadnn
-          writeAddr := weightAddrZero
-        }
-        .otherwise {
-          stateReg := infload
-          writeAddr := imgAddrZero
-        }*/
+    when (stateReg === idle) {
+      /*when(masterReg.Data(0) === UInt(0)) {
+        stateReg := loadnn
+        writeAddr := weightAddrZero
       }
+      .otherwise {
+        stateReg := infload
+        writeAddr := imgAddrZero
+      }*/
+    }
 
-      when (stateReg === infload) {
-        outputReg := UInt(4)
-        memory.io.wrEna := true.B
-        memory.io.wrAddr := writeAddr
-        memory.io.wrData := (masterReg.Data).asSInt
-        writeAddr := writeAddr + UInt(1)
-        when (writeAddr === weightAddrZero) {
-          memory.io.wrEna := false.B
-          readAddrP := imgAddrZero
-          readAddrW := weightAddrZero
-          readAddrB := biasAddrZero
-          stateReg := infrun
-        }
+    when (stateReg === infload) {
+      memory.io.wrEna := true.B
+      memory.io.wrAddr := writeAddr
+      memory.io.wrData := (masterReg.Data).asSInt
+      writeAddr := writeAddr + UInt(1)
+      when (writeAddr === weightAddrZero) {
+        memory.io.wrEna := false.B
+        readAddrP := imgAddrZero
+        readAddrW := weightAddrZero
+        readAddrB := biasAddrZero
+        stateReg := infrun
       }
+    }
 
-      when (stateReg === infrun) {
-        // Behaviour TBD
-        outputReg := UInt(5)
-      }
-  }
-  
-  val respReg = Reg(init = OcpResp.NULL)
-  respReg := OcpResp.NULL
-
-  when(masterReg.Cmd === OcpCmd.RD){
-    //Read status
-    switch(masterReg.Addr(4,0)) {
-      is(0x4.U) { 
-        outputReg := stateReg
-      }
-      //Read 8bit memory
-      is(0xC.U) { 
-        memory.io.rdAddr := memTestAdr
-        outputReg := (memory.io.rdData).asUInt
-        memTestAdr := memTestAdr + UInt(1)
-      }
-      //Read 32bit memory
-      is(0x10.U) { 
-        //memory.io.rdAddr := memTestAdr32
-        //outputReg := (memory32.io.rdData).asUInt
-        //memTestAdr32 := memTestAdr32 + UInt(1)
-      }
+    when (stateReg === infrun) {
+      // Behaviour TBD
     }
   }
 
-  when(masterReg.Cmd === OcpCmd.RD || masterReg.Cmd === OcpCmd.WR) {
-    respReg := OcpResp.DVA
+  when(masterReg.Cmd === OcpCmd.RD){
+    io.ocp.S.Resp := OcpResp.DVA
+    //Read status
+    switch(masterReg.Addr(4,0)) {
+      is(0x4.U) { 
+        io.ocp.S.Data := stateReg
+      }
+      //Read memory
+      is(0xC.U) { 
+        memory.io.rdAddr := memTestAdr
+        io.ocp.S.Data := (memory.io.rdData).asUInt
+        memTestAdr := memTestAdr + UInt(1)
+      }
+      //Read result
+    }
   }
-  
-  io.ocp.S.Data := outputReg
-  io.ocp.S.Resp := respReg
 }
