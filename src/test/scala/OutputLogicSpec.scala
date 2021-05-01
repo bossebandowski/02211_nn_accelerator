@@ -3,12 +3,12 @@ import chisel3.iotesters.PeekPokeTester
 import org.scalatest._
 import util._
 
-class NeuronTest(dut: OutputLogic) extends PeekPokeTester(dut) {
+class OutputLogicTest(dut: OutputLogic) extends PeekPokeTester(dut) {
     // test spec goes here.
     // 'poke' to set input
     // 'step' to advance clk 
     // 'expect' to check output
-    val values1 = Vec(10, Reg(SInt(32.W)))
+    val values1 = Vec(10,SInt (32.W))
     values1(0) = 12.S
     values1(1) = 125.S
     values1(2) = 354.S
@@ -22,7 +22,7 @@ class NeuronTest(dut: OutputLogic) extends PeekPokeTester(dut) {
 
 
     poke(dut.io.enable, 1.U)
-    poke(dut.io.values, 0.U)
+    poke(dut.io.values, values1)
 
     step(10)
 
@@ -30,7 +30,7 @@ class NeuronTest(dut: OutputLogic) extends PeekPokeTester(dut) {
 
 }
 
-class NeuronSpec extends FlatSpec with Matchers {
+class OutputLogicSpec extends FlatSpec with Matchers {
     "OutputLogic" should "pass" in {
         chisel3.iotesters.Driver(() => new OutputLogic) { c => new OutputLogicTest(c)} should be (true)
     }
