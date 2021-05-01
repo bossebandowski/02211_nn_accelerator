@@ -8,8 +8,6 @@ void loadNetworkCheck() {
     // transition to network load status
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
 
-    //cntReset();
-    //memoryReadAndWrite8BitTest();
     fillNeuralNetwork();
 
     printf("state after network load: %d \n", ADR_ACCELERATOR_STATUS);

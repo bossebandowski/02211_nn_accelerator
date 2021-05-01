@@ -15,9 +15,9 @@ volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 
 void fillNeuralNetwork()
 {
+    printf("Loading weights and biases into NN\n");
     // transition to network load state
     ADR_ACCELERATOR_INPUT = 0;
-
     
     printf("transitioned to state: %d \n", ADR_ACCELERATOR_STATUS);
 
@@ -26,29 +26,20 @@ void fillNeuralNetwork()
     for(int i = 0; i < 78400; i++)
     {
         ADR_ACCELERATOR_INPUT = weights_1[i];
-        /*if((i+1) % 10000 ==0)
-        {
-            printf("%d/79400 weight transferred\n",i + 1);
-        }*/
     }
+    
     for(int i = 0; i < 1000; i++)
     {
         ADR_ACCELERATOR_INPUT = weights_2[i];
-        /*if((i+1) % 10000 ==0)
-        {
-            printf("%d/79400 weight transferred\n",i + 1);
-        }*/
     }
     printf("Weights transferred successfully\n");
     printf("Transfering biases\n");
+    
     for(int i = 0; i < 100; i++)
     {
         ADR_ACCELERATOR_INPUT = biases_1[i];
-        /*if((i+1) % 10000 ==0)
-        {
-            printf("%d/79400 bias transferred\n",i + 1);
-        }*/
     }
+    
     for(int i = 0; i < 10; i++)
     {
         ADR_ACCELERATOR_INPUT = biases_2[i];

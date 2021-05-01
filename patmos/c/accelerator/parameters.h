@@ -79523,7 +79523,7 @@ const int biases_2[10] = {
 	-97
 };
 
-const int8_t img_5[784] = {
+const int img_5[784] = {
 	0,
 	0,
 	0,
@@ -80310,4 +80310,4 @@ const int8_t img_5[784] = {
 	0
 };
 
-const int8_t* picture = img_5;
+const int* picture = img_5;
