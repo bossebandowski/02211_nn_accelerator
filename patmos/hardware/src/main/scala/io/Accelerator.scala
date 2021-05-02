@@ -180,7 +180,14 @@ class Accelerator() extends CoreDevice() {
       */
       when (nodeIdx < UInt(100)) {
                                               // add bias to node (directly from memory to save clock cycles)
-        layer1(nodeIdx) := layer1(nodeIdx) + memory.io.rdData
+        val relu = layer1(nodeIdx) + memory.io.rdData
+                                              // standard tensorflow relu: max(0, x)
+        when (relu > SInt(0)) {
+          layer1(nodeIdx) := relu
+        } .otherwise {
+          layer1(nodeIdx) := SInt(0)
+        }
+
         memory.io.rdAddr := readAddrB         // update memory address for next cycle
         readAddrB := readAddrB + UInt(1)      // increment read address for next cycle
         nodeIdx := nodeIdx + UInt(1)          // increment node index for next cycle
@@ -231,7 +238,7 @@ class Accelerator() extends CoreDevice() {
       }
     }
     when (stateReg === writeRes) {
-      outputReg := layer2(UInt(0)).asUInt
+      outputReg := layer2(UInt(4)).asUInt
       stateReg := clear
     }
     when (stateReg === clear) {
