@@ -227,6 +227,9 @@ class Accelerator() extends CoreDevice() {
     }
 
     when (stateReg === addb1) {
+      /*
+      adding bias to output nodes.
+      */
       when (outputIdx < UInt(10)) {
         layer2(outputIdx) := layer2(outputIdx) + memory.io.rdData
         memory.io.rdAddr := readAddrB         // next value will be a bias
@@ -238,6 +241,11 @@ class Accelerator() extends CoreDevice() {
       }
     }
     when (stateReg === writeRes) {
+      /*
+      extracting the index of the maximum value in the output layer.
+      Just a bunch of multiplexors with >= comparators as flags.
+      After this state, outputReg holds the inference result.
+      */
       val max01 = Wire(0.U(32.W))
       val val01 = Wire(0.S(32.W))
       val max23 = Wire(0.U(32.W))
@@ -330,6 +338,9 @@ class Accelerator() extends CoreDevice() {
       stateReg := clear
     }
     when (stateReg === clear) {
+      /*
+      reset all node registers to 0
+      */
       when (outputIdx < UInt(10)) {
         layer2(outputIdx) := SInt(0)
         outputIdx := outputIdx + UInt(1)
