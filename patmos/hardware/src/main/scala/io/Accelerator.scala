@@ -24,11 +24,13 @@ class Accelerator() extends CoreDevice() {
   val pReg = Reg(init = SInt(0, 32))
   val wReg = Reg(init = SInt(0, 32))
   val bReg = Reg(init = SInt(0, 32))
+  val outputReg = Reg(init = UInt(10, 32))
 
   val layer1 = Reg(Vec(100, SInt(32.W)))
   val layer2 = Reg(Vec(10, SInt(32.W)))
 
   val nodeIdx = Reg(init = UInt(0, 8))
+  val outputIdx = Reg(init = UInt(0, 8))
 
   // memory
   val memory = Module(new MemorySInt(18, 32))
@@ -50,8 +52,8 @@ class Accelerator() extends CoreDevice() {
   // network constants
 
   // states
-  val noNN :: loadNN :: idle :: infLoad :: loadpx :: loadw0 :: incNode0  :: loadb0 :: addb0 :: infInit1 :: loadw1 :: incNode1 :: initb1 :: loadb1 :: addb1 :: writeRes :: clear :: Nil = Enum(UInt(), 17)
-  //  0       1         2       3          4         5         6            7         8         9        10          11        12          13        14        15       16          17                                 
+  val noNN :: loadNN :: idle :: infLoad :: loadpx :: loadw0 :: incNode0  :: addb0 :: incNode1 :: addb1 :: writeRes :: clear :: Nil = Enum(UInt(), 12)
+  //  0       1         2       3          4         5         6            7        8           9        10          11       12                                 
   val stateReg = Reg(init = noNN)
 
   // set memory address. Only for debugging
@@ -140,7 +142,7 @@ class Accelerator() extends CoreDevice() {
         nodeIdx := UInt(0)                    // reset node idx
         readAddrB := readAddrB + UInt(1)      // increment bias addr
         readAddrW := readAddrW + UInt(1)      // also need to increment weight address
-        stateReg := loadb0
+        stateReg := addb0
       }
       .otherwise {
         memory.io.wrEna := false.B            // disable memory write to prevent data corruption
@@ -159,28 +161,99 @@ class Accelerator() extends CoreDevice() {
       been evaluated. Otherwise moves on to the next weight.
       */
       when (nodeIdx < UInt(100)) {
-                                            // increment node value with product of pixel and weight (directly from memory to save clock cycles)
+                                              // increment node value with product of pixel and weight (directly from memory to save clock cycles)
         layer1(nodeIdx) := layer1(nodeIdx) + pReg * memory.io.rdData
-        memory.io.rdAddr := readAddrW       // update memory address for next cycle
-        readAddrW := readAddrW + UInt(1)    // increment read address for next cycle
-        nodeIdx := nodeIdx + UInt(1)        // increment node index for next cycle
+        memory.io.rdAddr := readAddrW         // update memory address for next cycle
+        readAddrW := readAddrW + UInt(1)      // increment read address for next cycle
+        nodeIdx := nodeIdx + UInt(1)          // increment node index for next cycle
       }
       .otherwise {
-        memory.io.rdAddr := readAddrP       // prepare for pixel load. No need to increment weight address here because that happens in the pixel load state
+        memory.io.rdAddr := readAddrP         // prepare for pixel load. No need to increment weight address here because that happens in the pixel load state
         stateReg := loadpx
       }
     }
 
-    when (stateReg === loadb0) {
+    when (stateReg === addb0) {
+      /*
+      adding bias to nodes in hidden layer. A simple loop over all nodes, adding bias directly from memory.
+      Transition to layer 2 when done.
+      */
+      when (nodeIdx < UInt(100)) {
+                                              // add bias to node (directly from memory to save clock cycles)
+        layer1(nodeIdx) := layer1(nodeIdx) + memory.io.rdData
+        memory.io.rdAddr := readAddrB         // update memory address for next cycle
+        readAddrB := readAddrB + UInt(1)      // increment read address for next cycle
+        nodeIdx := nodeIdx + UInt(1)          // increment node index for next cycle
+      }
+      .otherwise {
+        memory.io.rdAddr := readAddrW         // next value we'll want to read is a weight
+        readAddrW := readAddrW + UInt(1)      // increment weight address for next cycle
+        nodeIdx := UInt(0)                    // reset node index
+        outputIdx := UInt(0)                  // set output index
+        stateReg := incNode1
+      }
+    }
 
+    when (stateReg === incNode1) {
+      /*
+      calculating second layer nodes. For every node in the hidden layer, load the weights to all
+      ten output nodes and multiply-accumulate. When done, transition to adding bias to the output layer
+      */
+      readAddrW := readAddrW + UInt(1)        // increment read address for next cycle
+
+      when (nodeIdx < UInt(100)) {
+        memory.io.rdAddr := readAddrW         // update memory address for next cycle
+        when (outputIdx < UInt(10)) {
+          layer2(outputIdx) := layer2(outputIdx) + layer1(nodeIdx) * memory.io.rdData
+          outputIdx := outputIdx + UInt(1)    // increment output idx  
+        }
+        .otherwise {
+          outputIdx := UInt(0)                // reset output idx
+          nodeIdx := nodeIdx + UInt(1)        // increment node index for next cycle
+        }
+      }
+      .otherwise {
+        memory.io.rdAddr := readAddrB         // next value will be a bias
+        readAddrB := readAddrB + UInt(1)      // increment bias addr
+        stateReg := addb1
+      }
+    }
+
+    when (stateReg === addb1) {
+      when (outputIdx < UInt(10)) {
+        layer2(outputIdx) := layer2(outputIdx) + memory.io.rdData
+        memory.io.rdAddr := readAddrB         // next value will be a bias
+        readAddrB := readAddrB + UInt(1)      // increment bias addr
+        outputIdx := outputIdx + UInt(1)
+      }
+      .otherwise {
+        stateReg := writeRes
+      }
+    }
+    when (stateReg === writeRes) {
+      outputReg := layer2(UInt(0)).asUInt
+      stateReg := clear
+    }
+    when (stateReg === clear) {
+      when (outputIdx < UInt(10)) {
+        layer2(outputIdx) := SInt(0)
+        outputIdx := outputIdx + UInt(1)
+      }
+      when (nodeIdx < UInt(100)) {
+        layer1(nodeIdx) := SInt(0)
+        nodeIdx := nodeIdx + UInt(1)
+      }
+      .otherwise {
+        stateReg := idle
+      }
     }
   }
 
   // handle reads. Only for returning results and debugging
   when(masterReg.Cmd === OcpCmd.RD){
     io.ocp.S.Resp := OcpResp.DVA
-    //Read status
     switch(masterReg.Addr(4,0)) {
+      //Read status
       is(0x4.U) { 
         io.ocp.S.Data := stateReg
       }
@@ -190,6 +263,9 @@ class Accelerator() extends CoreDevice() {
         io.ocp.S.Data := (memory.io.rdData).asUInt
       }
       //Read result
+      is(0x8.U) {
+        io.ocp.S.Data := outputReg
+      }
     }
   }
 }

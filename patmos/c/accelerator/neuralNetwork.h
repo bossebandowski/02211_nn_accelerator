@@ -1,7 +1,5 @@
 #include "parameters.h"
 
-typedef enum ACCELERATOR_STATE {IDLE, LOAD_NN, ERROR, READY}ACCELERATOR_STATE; //TODO: add other states
-
 // IO device addresses
 volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 
@@ -9,8 +7,11 @@ volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 
 #define ADR_ACCELERATOR_INPUT                       *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x0))
 #define ADR_ACCELERATOR_STATUS                      *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x4))
+#define ADR_ACCELERATOR_RESULT                      *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x8))
 #define ADR_ACCELERATOR_MEMORY_TEST_READ            *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0xC))
 #define ADR_ACCELERATOR_SET_MEM_ADDR                *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x10))
+
+
 
 
 void fillNeuralNetwork(bool v) {
@@ -51,14 +52,4 @@ void fillNeuralNetwork(bool v) {
     if (v) {
         printf("Biases transferred successfully\n");
     }
-}
-
-ACCELERATOR_STATE getNeuralNetworkStatus()
-{
-    int regVal = *IO_PTR_ACC;
-    if(regVal != IDLE && regVal != LOAD_NN)
-    {
-        return ERROR;
-    }
-    return (ACCELERATOR_STATE) regVal;
 }

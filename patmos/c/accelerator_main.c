@@ -88,7 +88,7 @@ int main()
 
     // loadNetworkCheck();
     // loadInfCheck();
-
+    printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
     printf("state init: %d \n", ADR_ACCELERATOR_STATUS);
     fillNeuralNetwork(false);
     printf("state after network fill: %d \n", ADR_ACCELERATOR_STATUS);
@@ -97,8 +97,7 @@ int main()
     int postImgLoad = ADR_ACCELERATOR_STATUS;
     printf("state after image load: %d \n", postImgLoad);
     printf("state after these print statements: %d \n", ADR_ACCELERATOR_STATUS);
-
-
+    printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
 
     printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
 
