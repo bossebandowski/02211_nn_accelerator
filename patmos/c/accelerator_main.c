@@ -1,17 +1,16 @@
 #include <machine/patmos.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include "accelerator/neuralNetwork.h"
 #include "accelerator/counter.h"
 
 void loadNetworkCheck() {
-    // transition to network load status
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
 
-    fillNeuralNetwork();
+    fillNeuralNetwork(true);
 
     printf("state after network load: %d \n", ADR_ACCELERATOR_STATUS);
-    
     int rsp = readFromMem(784);
     printf("Expected: %d, Read: %d \n",weights_1[0], rsp);
     rsp = readFromMem(10000);
@@ -40,17 +39,23 @@ void loadNetworkCheck() {
 
 }
 
-void loadInfCheck() {
-    // check initial state (should be idle after network load, otherwise nonn)
-    printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
+void loadImg(bool v) {
     // transition to infload
     ADR_ACCELERATOR_INPUT = 1;
-    // check state (should be infload)
-    printf("inf load state: %d \n", ADR_ACCELERATOR_STATUS);
-    printf("loading img...\n");
+    if (v) {
+        printf("inf load state: %d \n", ADR_ACCELERATOR_STATUS);
+    }
     for(int i = 0; i < 784; i++) {
         ADR_ACCELERATOR_INPUT = picture[i];
     }
+}
+
+void loadInfCheck() {
+    // check initial state (should be idle after network load, otherwise nonn)
+    printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
+    // check state (should be infload)
+    printf("loading img...\n");
+    loadImg(true);
 
     printf("done\n");
 
@@ -81,8 +86,19 @@ int main()
     printf("Program started\n");
     
 
-    loadNetworkCheck();
-    loadInfCheck();
+    // loadNetworkCheck();
+    // loadInfCheck();
+
+    printf("state init: %d \n", ADR_ACCELERATOR_STATUS);
+    fillNeuralNetwork(false);
+    printf("state after network fill: %d \n", ADR_ACCELERATOR_STATUS);
+
+    loadImg(false);
+    int postImgLoad = ADR_ACCELERATOR_STATUS;
+    printf("state after image load: %d \n", postImgLoad);
+    printf("state after these print statements: %d \n", ADR_ACCELERATOR_STATUS);
+
+
 
     printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
 

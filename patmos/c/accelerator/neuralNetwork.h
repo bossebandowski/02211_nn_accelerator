@@ -13,16 +13,19 @@ volatile _IODEV int *IO_PTR_ACC = (volatile _IODEV int *) 0xf00c0000;
 #define ADR_ACCELERATOR_SET_MEM_ADDR                *((volatile _IODEV unsigned int *) (ADR_ACCELERATOR_BASE + 0x10))
 
 
-void fillNeuralNetwork()
-{
-    printf("Loading weights and biases into NN\n");
+void fillNeuralNetwork(bool v) {
+    if (v) {
+        printf("Loading weights and biases into NN\n");
+    }
     // transition to network load state
     ADR_ACCELERATOR_INPUT = 0;
     
-    printf("transitioned to state: %d \n", ADR_ACCELERATOR_STATUS);
-
-    printf("Parameter transfer to accelerator has started\n");
-    printf("Transfering weights\n");
+    if (v) {
+        printf("transitioned to state: %d \n", ADR_ACCELERATOR_STATUS);
+        printf("Parameter transfer to accelerator has started\n");
+        printf("Transfering weights\n");
+    }
+    
     for(int i = 0; i < 78400; i++)
     {
         ADR_ACCELERATOR_INPUT = weights_1[i];
@@ -32,9 +35,10 @@ void fillNeuralNetwork()
     {
         ADR_ACCELERATOR_INPUT = weights_2[i];
     }
-    printf("Weights transferred successfully\n");
-    printf("Transfering biases\n");
-    
+    if (v) {
+        printf("Weights transferred successfully\n");
+        printf("Transfering biases\n");
+    }
     for(int i = 0; i < 100; i++)
     {
         ADR_ACCELERATOR_INPUT = biases_1[i];
@@ -44,7 +48,9 @@ void fillNeuralNetwork()
     {
         ADR_ACCELERATOR_INPUT = biases_2[i];
     }
-    printf("Biases transferred successfully\n");
+    if (v) {
+        printf("Biases transferred successfully\n");
+    }
 }
 
 ACCELERATOR_STATE getNeuralNetworkStatus()
