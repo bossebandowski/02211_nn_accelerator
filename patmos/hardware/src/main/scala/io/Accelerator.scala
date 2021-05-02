@@ -238,7 +238,95 @@ class Accelerator() extends CoreDevice() {
       }
     }
     when (stateReg === writeRes) {
-      outputReg := layer2(UInt(4)).asUInt
+      val max01 = Wire(0.U(32.W))
+      val val01 = Wire(0.S(32.W))
+      val max23 = Wire(0.U(32.W))
+      val val23 = Wire(0.S(32.W))
+      val max45 = Wire(0.U(32.W))
+      val val45 = Wire(0.S(32.W))
+      val max67 = Wire(0.U(32.W))
+      val val67 = Wire(0.S(32.W))
+      val max89 = Wire(0.U(32.W))
+      val val89 = Wire(0.S(32.W))
+
+      when (layer2(UInt(0))>=layer2(UInt(1))) {
+        max01 := UInt(0)
+        val01 := layer2(UInt(0))
+      }.otherwise {
+        max01 := UInt(1)
+        val01 := layer2(UInt(1))
+      }
+
+      when (layer2(UInt(2))>=layer2(UInt(3))) {
+        max23 := UInt(2)
+        val23 := layer2(UInt(2))
+      }.otherwise {
+        max23 := UInt(3)
+        val23 := layer2(UInt(3))
+      }
+
+      when (layer2(UInt(4))>=layer2(UInt(5))) {
+        max45 := UInt(4)
+        val45 := layer2(UInt(4))
+      }.otherwise {
+        max45 := UInt(5)
+        val45 := layer2(UInt(5))
+      }
+
+      when (layer2(UInt(6))>=layer2(UInt(7))) {
+        max67 := UInt(6)
+        val67 := layer2(UInt(6))
+      }.otherwise {
+        max67 := UInt(7)
+        val67 := layer2(UInt(7))
+      }
+
+      when (layer2(UInt(8))>=layer2(UInt(9))) {
+        max89 := UInt(8)
+        val89 := layer2(UInt(8))
+      }.otherwise {
+        max89 := UInt(9)
+        val89 := layer2(UInt(9))
+      }
+
+      val max0123 = Wire(0.U(32.W))
+      val val0123 = Wire(0.S(32.W))
+      val max4567 = Wire(0.U(32.W))
+      val val4567 = Wire(0.S(32.W))
+
+      when (val01 >= val23) {
+        max0123 := max01
+        val0123 := val01
+      } .otherwise {
+        max0123 := max23
+        val0123 := val23
+      }
+
+      when (val45 >= val67) {
+        max4567 := max45
+        val4567 := val45
+      } .otherwise {
+        max4567 := max67
+        val4567 := val67
+      }
+
+      val max127 = Wire(0.U(32.W))
+      val val127 = Wire(0.S(32.W))
+
+      when (val0123 >= val4567) {
+        max127 := max0123
+        val127 := val0123
+      } .otherwise {
+        max127 := max4567
+        val127 := val4567
+      }
+
+      when (val127 >= val89) {
+        outputReg := max127
+      }.otherwise {
+        outputReg := max89
+      }
+
       stateReg := clear
     }
     when (stateReg === clear) {
