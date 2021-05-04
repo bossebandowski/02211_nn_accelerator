@@ -89,6 +89,7 @@ int main()
     // loadInfCheck();
 
     fillNeuralNetwork(false);
+    cntReset();
     loadImg(false);
     printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
     printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
