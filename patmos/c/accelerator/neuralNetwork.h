@@ -88,6 +88,14 @@ int calculateNNCPU()
     {
         layer1[i] += biases_1[i];
     }
+    // Apply relu
+    for(int i = 0; i < 100; i++)
+    {
+        if(layer1[i] <= 0)
+        {
+            layer1[i] = 0;
+        }
+    }
 
     // Second layer
     // Calculate neuron values
@@ -105,6 +113,14 @@ int calculateNNCPU()
     for(int i = 0; i < 10; i++)
     {
         layer2[i] += biases_2[i];
+    }
+    // Apply relu
+    for(int i = 0; i < 10; i++)
+    {
+        if(layer2[i] <= 0)
+        {
+            layer2[i] = 0;
+        }
     }
 
     // Find maximum
