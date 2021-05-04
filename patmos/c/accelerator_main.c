@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include "accelerator/neuralNetwork.h"
-#include "accelerator/counter.h"
 
 void loadNetworkCheck() {
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
@@ -88,11 +87,14 @@ int main()
 
     // loadNetworkCheck();
     // loadInfCheck();
+
     fillNeuralNetwork(false);
     loadImg(false);
     printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
     printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
 
     printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
+
+    printf("Result by patmos:%d\n", calculateNNCPU());
 
 }
