@@ -115,13 +115,14 @@ int calculateNNCPU()
         layer2[i] += biases_2[i];
     }
     // Apply relu
-    for(int i = 0; i < 10; i++)
+    /*for(int i = 0; i < 10; i++)
     {
+        //printf("%d\n", layer2[i]);
         if(layer2[i] <= 0)
         {
             layer2[i] = 0;
         }
-    }
+    }*/
 
     // Find maximum
     int result = -1;

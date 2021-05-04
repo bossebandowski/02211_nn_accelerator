@@ -118088,4 +118088,4 @@ const int img_9_7[784] = {
 	0
 };
 
-const int* picture = img_6_5;
+const int* picture = img_8_1;

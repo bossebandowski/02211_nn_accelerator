@@ -91,11 +91,14 @@ int main()
     fillNeuralNetwork(false);
     cntReset();
     loadImg(false);
-    printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
-    printf("Output register content: %d \n", ADR_ACCELERATOR_RESULT);
+    int result = ADR_ACCELERATOR_RESULT;
+    while(result == 10)
+    {
+        result = ADR_ACCELERATOR_RESULT;
+    }
 
-    printf("Elapsed time: %d clock cycles, %f micros\n", cntRead(), cntReadMicros());
-
-    printf("Result by patmos:%d\n", calculateNNCPU());
+    double hardware_exec_time = cntReadMicros();
+    printf("Output register content: %d \n", result);
+    printf("Elapsed time: %f micros\n", hardware_exec_time);
 
 }
