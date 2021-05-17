@@ -1,6 +1,7 @@
 package io
 
 import Chisel._
+import chisel3.Driver
 
 import patmos.Constants._
 
@@ -374,4 +375,11 @@ class Accelerator() extends CoreDevice() {
       }
     }
   }
+}
+
+/*
+ instantiate component for synthesis
+ */
+object AcceleratorMain extends App {
+  chisel3.Driver.execute(args, () => new Accelerator())
 }
