@@ -97,8 +97,11 @@ int main()
         result = ADR_ACCELERATOR_RESULT;
     }
 
-    double hardware_exec_time = cntReadMicros();
+    double micros = cntReadMicros();
+    double cycles = cntRead();
+
     printf("Output register content: %d \n", result);
-    printf("Elapsed time: %f micros\n", hardware_exec_time);
+    printf("Inference time: %f micros\n", micros);
+    printf("Inference cycles: %f cycles\n", cycles);
 
 }

@@ -42,7 +42,6 @@ class Accelerator() extends CoreDevice() {
   val weightAddrZero = UInt(784)
   val biasAddrZero = UInt(80184)
   val nodeAddrZero = UInt(80293)
-  val lastAddr = UInt(80392)
 
   // Default OCP response
   io.ocp.S.Resp := OcpResp.NULL

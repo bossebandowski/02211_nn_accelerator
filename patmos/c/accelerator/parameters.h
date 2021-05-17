@@ -118088,4 +118088,15 @@ const int img_9_7[784] = {
 	0
 };
 
-const int* picture = img_8_1;
+const int* picture_0 = img_0_1;
+const int* picture_1 = img_1_1;
+const int* picture_2 = img_2_1;
+const int* picture_3 = img_3_1;
+const int* picture_4 = img_4_1;
+const int* picture_5 = img_5_1;
+const int* picture_6 = img_6_1;
+const int* picture_7 = img_7_1;
+const int* picture_8 = img_8_1;
+const int* picture_9 = img_9_1;
+
+const int* picture = img_0_1;
