@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include "accelerator/neuralNetwork.h"
+#include "accelerator/collection.h"
 
 void loadNetworkCheck() {
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
@@ -38,14 +39,15 @@ void loadNetworkCheck() {
 
 }
 
-void loadImg(bool v) {
+void loadImg(int imageIndex, bool v) {
     // transition to infload
     ADR_ACCELERATOR_INPUT = 1;
     if (v) {
         printf("inf load state: %d \n", ADR_ACCELERATOR_STATUS);
     }
     for(int i = 0; i < 784; i++) {
-        ADR_ACCELERATOR_INPUT = picture[i];
+        ADR_ACCELERATOR_INPUT = images[imageIndex][i];
+        //ADR_ACCELERATOR_INPUT = picture[i];
     }
 }
 
@@ -54,9 +56,9 @@ void loadInfCheck() {
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
     // check state (should be infload)
     printf("loading img...\n");
-    loadImg(true);
+    //loadImg(true);
 
-    printf("done\n");
+    //printf("done\n");
 
     for (int i = 0; i < 30; i++) {
         printf("Expected: %d, Read: %d \n", picture[i*20], readFromMem(i*20));
@@ -88,20 +90,38 @@ int main()
     // loadNetworkCheck();
     // loadInfCheck();
 
-    fillNeuralNetwork(false);
-    cntReset();
-    loadImg(false);
-    int result = ADR_ACCELERATOR_RESULT;
-    while(result == 10)
-    {
-        result = ADR_ACCELERATOR_RESULT;
-    }
+    fillNeuralNetwork(true);
+    //cntReset();
 
-    double micros = cntReadMicros();
+    int errorCounter = 0;
+    for(int i = 0; i < 100; i++)
+    {
+        loadImg(i, true);
+        //usleep(100);
+        int result = ADR_ACCELERATOR_RESULT;
+        while(result == 10)
+        {
+            result = ADR_ACCELERATOR_RESULT;
+        }
+        if(result == results[i])
+        {
+            // Print format: testID, expected, calculated, idSuccesfull(1/0)
+            printf("%d,%d,%d,1\n", i,results[i],result);
+        }
+        else
+        {
+            printf("%d,%d,%d,0\n", i,results[i],result);
+            errorCounter++;
+        }
+    }
+    printf("100 tests done. Number of erorrs: %d", errorCounter);
+
+    /*double micros = cntReadMicros();
     double cycles = cntRead();
 
     printf("Output register content: %d \n", result);
     printf("Inference time: %f micros\n", micros);
-    printf("Inference cycles: %f cycles\n", cycles);
+    printf("Inference cycles: %f cycles\n", cycles);*/
+
 
 }
