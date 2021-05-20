@@ -92,29 +92,29 @@ int main()
 
     fillNeuralNetwork(true);
     //cntReset();
+    int result;
 
     int errorCounter = 0;
     for(int i = 0; i < 100; i++)
     {
         loadImg(i, true);
         //usleep(100);
-        int result = ADR_ACCELERATOR_RESULT;
-        while(result == 10)
+        while(ADR_ACCELERATOR_STATUS != 2)
         {
             result = ADR_ACCELERATOR_RESULT;
         }
         if(result == results[i])
         {
             // Print format: testID, expected, calculated, idSuccesfull(1/0)
-            printf("%d,%d,%d,1\n", i,results[i],result);
+            printf("CORRECT. Expected %d and got %d\n", results[i],result);
         }
         else
         {
-            printf("%d,%d,%d,0\n", i,results[i],result);
+            printf("INCORRECT. Expected %d and got %d at image %d\n ", results[i],result, i);
             errorCounter++;
         }
     }
-    printf("100 tests done. Number of erorrs: %d", errorCounter);
+    printf("100 tests done. Number of errors: %d", errorCounter);
 
     /*double micros = cntReadMicros();
     double cycles = cntRead();
