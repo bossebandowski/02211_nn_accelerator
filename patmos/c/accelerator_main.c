@@ -95,9 +95,13 @@ int main()
     int result;
 
     int errorCounter = 0;
+    printf("==========================\n");
+    printf("Starting inference test...\n");
+    printf("==========================\n");
+
     for(int i = 0; i < 100; i++)
     {
-        loadImg(i, true);
+        loadImg(i, false);
         //usleep(100);
         while(ADR_ACCELERATOR_STATUS != 2)
         {
@@ -110,7 +114,7 @@ int main()
         }
         else
         {
-            printf("INCORRECT. Expected %d and got %d at image %d\n ", results[i],result, i);
+            printf("INCORRECT. Expected %d and got %d at image %d\n", results[i],result, i);
             errorCounter++;
         }
     }
