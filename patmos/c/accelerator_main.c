@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include "accelerator/neuralNetwork.h"
-#include "accelerator/collection.h"
 
 void loadNetworkCheck() {
     printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
@@ -120,12 +119,27 @@ int main()
     }
     printf("100 tests done. Number of errors: %d", errorCounter);
 
-    /*double micros = cntReadMicros();
-    double cycles = cntRead();
-
-    printf("Output register content: %d \n", result);
-    printf("Inference time: %f micros\n", micros);
-    printf("Inference cycles: %f cycles\n", cycles);*/
-
+    printf("Run software NN test\n");
+    errorCounter = 0;
+    for(int i = 0; i< 5; i++)
+    {
+        int result = calculateNNCPU(i);
+        if(result == results[i])
+        {
+            // Print format: testID, expected, calculated, idSuccesfull(1/0)
+            printf("CORRECT. Expected %d and got %d\n", results[i],result);
+        }
+        else
+        {
+            printf("INCORRECT. Expected %d and got %d at image %d\n", results[i],result, i);
+            errorCounter++;
+        }
+    }
+    printf("100 tests done. Number of errors: %d", errorCounter);
+    printf("Runtimes:\n");
+    for(int i = 0; i< 100; i++)
+    {
+        printf("%d\n", executionTimes[i] );
+    }
 
 }

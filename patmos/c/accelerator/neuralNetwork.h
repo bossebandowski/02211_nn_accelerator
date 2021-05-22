@@ -55,13 +55,14 @@ void fillNeuralNetwork(bool v) {
     }
 }
 
-int calculateNNCPU()
+int calculateNNCPU(int aImageIndex)
 {
+    printf("nn start\n");
+    cntReset();
     int layer1[100];
     int layer2[10];
 
     //Execution time starts from here
-    cntReset();
     // First layer
     // Calculate neuron values
     int weightIndex = 0;
@@ -69,7 +70,7 @@ int calculateNNCPU()
     {
         for(int p = 0; p < 784; p++)
         {
-            layer1[i] += picture[p] * weights_1[weightIndex];
+            layer1[i] += images[aImageIndex][p] * weights_1[weightIndex];
             weightIndex ++;
         }
     }
@@ -104,15 +105,6 @@ int calculateNNCPU()
     {
         layer2[i] += biases_2[i];
     }
-    // Apply relu
-    /*for(int i = 0; i < 10; i++)
-    {
-        //printf("%d\n", layer2[i]);
-        if(layer2[i] <= 0)
-        {
-            layer2[i] = 0;
-        }
-    }*/
 
     // Find maximum
     int resultnum = layer2[0];
@@ -127,7 +119,8 @@ int calculateNNCPU()
         }
     }
 
-    double micros = cntReadMicros();
-    printf("Elapsed time: %f micros\n", micros);
+    executionTimes[aImageIndex] = cntRead();
+    //double micros = cntReadMicros();
+    //printf("Elapsed time: %d micros\n", executionTimes[aImageIndex]);
     return result;
 }
