@@ -121,7 +121,7 @@ int main()
 
     printf("Run software NN test\n");
     errorCounter = 0;
-    for(int i = 0; i< 5; i++)
+    for(int i = 0; i< 100; i++)
     {
         int result = calculateNNCPU(i);
         if(result == results[i])
