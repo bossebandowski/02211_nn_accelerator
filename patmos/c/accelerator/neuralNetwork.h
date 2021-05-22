@@ -60,16 +60,6 @@ int calculateNNCPU()
     int layer1[100];
     int layer2[10];
 
-    // Reset everything for safety (Does not count in execution time)
-    for(int i = 0; i < 100; i++)
-    {
-        layer1[i] = 0;
-    }
-    for(int i = 0; i < 10; i++)
-    {
-        layer2[i] = 0;
-    }
-
     //Execution time starts from here
     cntReset();
     // First layer
@@ -125,13 +115,15 @@ int calculateNNCPU()
     }*/
 
     // Find maximum
-    int result = -1;
+    int resultnum = layer2[0];
+    int result = 0;
     for(int i = 0; i < 10; i++)
     {
-        printf("%d\n", layer2[i]);
-        if(layer2[i] >= result)
+        //printf("%d\n", layer2[i]);
+        if(layer2[i] > resultnum)
         {
             result = i;
+            resultnum = layer2[i];
         }
     }
 
