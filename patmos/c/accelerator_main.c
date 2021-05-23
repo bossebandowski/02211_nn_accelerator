@@ -33,7 +33,8 @@ int main()
             errorCounter++;
         }
     }
-    printf("100 tests done. Number of errors: %d"\n, errorCounter);
+    
+    printf("100 tests done. Number of errors: %d \n", errorCounter);
     printf("Measuring execution time with no printf...\n");
     cntReset();
     loadImg(0, false);
