@@ -14,9 +14,14 @@ Chisel source files has to be defined in patmos/hardware/src/main/scala/ and the
 In order to run our predefined tests follow the following instructions:
 
 1; cd t-crest/patmos
+
 2; make clean
+
 3; make tools
+
 4; make emulator
+
 5; make comp APP=accelerator_main
+
 6; patemu tmp/accelerator_main.elf
 
