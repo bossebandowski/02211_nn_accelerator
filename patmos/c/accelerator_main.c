@@ -4,95 +4,13 @@
 #include <unistd.h>
 #include "accelerator/neuralNetwork.h"
 
-void loadNetworkCheck() {
-    printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
-
-    fillNeuralNetwork(true);
-
-    printf("state after network load: %d \n", ADR_ACCELERATOR_STATUS);
-    int rsp = readFromMem(784);
-    printf("Expected: %d, Read: %d \n",weights_1[0], rsp);
-    rsp = readFromMem(10000);
-    printf("Expected: %d, Read: %d \n",weights_1[9216], rsp);
-    rsp = readFromMem(79183);
-    printf("Expected: %d, Read: %d \n",weights_1[78399], rsp);
-    rsp = readFromMem(79184);
-    printf("Expected: %d, Read: %d \n",weights_2[0], rsp);
-    rsp = readFromMem(79185);
-    printf("Expected: %d, Read: %d \n",weights_2[1], rsp);
-    rsp = readFromMem(80182);
-    printf("Expected: %d, Read: %d \n",weights_2[998], rsp);
-    rsp = readFromMem(80183);
-    printf("Expected: %d, Read: %d \n",weights_2[999], rsp);
-    rsp = readFromMem(80184);
-    printf("Expected: %d, Read: %d \n",biases_1[0], rsp);
-    rsp = readFromMem(80292);
-    printf("Expected: %d, Read: %d \n",biases_2[8], rsp);
-    rsp = readFromMem(80293);
-    printf("Expected: %d, Read: %d \n",biases_2[9], rsp);
-
-    
-    printf("==================\n");
-    printf("network check done\n");
-    printf("==================\n");
-
-}
-
-void loadImg(int imageIndex, bool v) {
-    // transition to infload
-    ADR_ACCELERATOR_INPUT = 1;
-    if (v) {
-        printf("inf load state: %d \n", ADR_ACCELERATOR_STATUS);
-    }
-    for(int i = 0; i < 784; i++) {
-        ADR_ACCELERATOR_INPUT = images[imageIndex][i];
-        //ADR_ACCELERATOR_INPUT = picture[i];
-    }
-}
-
-void loadInfCheck() {
-    // check initial state (should be idle after network load, otherwise nonn)
-    printf("init state: %d \n", ADR_ACCELERATOR_STATUS);
-    // check state (should be infload)
-    printf("loading img...\n");
-    //loadImg(true);
-
-    //printf("done\n");
-
-    for (int i = 0; i < 30; i++) {
-        printf("Expected: %d, Read: %d \n", picture[i*20], readFromMem(i*20));
-    }
-
-    printf("Expected: %d, Read: %d \n", picture[783], readFromMem(783));
-
-
-    printf("==================\n");
-    printf("img check done\n");
-    printf("==================\n");
-    printf("state after inf load: %d \n", ADR_ACCELERATOR_STATUS);
-}
-
-
-int readFromMem(int addr) {
-    printf("checking value at address %d \n", addr);
-    ADR_ACCELERATOR_SET_MEM_ADDR = addr;
-    int val = ADR_ACCELERATOR_MEMORY_TEST_READ;
-    val = ADR_ACCELERATOR_MEMORY_TEST_READ;
-    return val;
-}
-
 int main() 
 {
     printf("Program started\n");
-    
+    loadNetworkCheck();
 
-    // loadNetworkCheck();
-    // loadInfCheck();
-
-    fillNeuralNetwork(true);
-    //cntReset();
     int result;
-
+    int hwExecTime = 0;
     int errorCounter = 0;
     printf("==========================\n");
     printf("Starting inference test...\n");
@@ -101,14 +19,12 @@ int main()
     for(int i = 0; i < 100; i++)
     {
         loadImg(i, false);
-        //usleep(100);
         while(ADR_ACCELERATOR_STATUS != 2)
         {
             result = ADR_ACCELERATOR_RESULT;
         }
         if(result == results[i])
         {
-            // Print format: testID, expected, calculated, idSuccesfull(1/0)
             printf("CORRECT. Expected %d and got %d\n", results[i],result);
         }
         else
@@ -117,29 +33,33 @@ int main()
             errorCounter++;
         }
     }
-    printf("100 tests done. Number of errors: %d", errorCounter);
+    printf("100 tests done. Number of errors: %d"\n, errorCounter);
+    printf("Measuring execution time with no printf...\n");
+    cntReset();
+    loadImg(0, false);
+    while(ADR_ACCELERATOR_STATUS != 2)
+    {
+        result = ADR_ACCELERATOR_RESULT;
+    }
+    hwExecTime = cntRead();
+    printf("Execution time was %d\n", hwExecTime);
+    printf("==========================\n");
 
-    printf("Run software NN test\n");
-    errorCounter = 0;
+    printf("Run software NN tests and measuring execution times (no printf-s)...\n");
+
     for(int i = 0; i< 100; i++)
     {
-        int result = calculateNNCPU(i);
-        if(result == results[i])
-        {
-            // Print format: testID, expected, calculated, idSuccesfull(1/0)
-            printf("CORRECT. Expected %d and got %d\n", results[i],result);
-        }
-        else
-        {
-            printf("INCORRECT. Expected %d and got %d at image %d\n", results[i],result, i);
-            errorCounter++;
-        }
+        calculateNNCPU(i);
     }
-    printf("100 tests done. Number of errors: %d", errorCounter);
-    printf("Runtimes:\n");
+    printf("100 tests done!");
+
+    //Calculating avarage runtime of sw runs
+    int avarageRuntime = 0;
+
     for(int i = 0; i< 100; i++)
     {
-        printf("%d\n", executionTimes[i] );
+        avarageRuntime += executionTimes[i];
     }
-
+    avarageRuntime = avarageRuntime / 100;
+    printf("The avarage software runtime was: %d\n", avarageRuntime);
 }
